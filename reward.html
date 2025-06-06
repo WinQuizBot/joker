@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Watch Ad to Get Reward</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      margin-top: 30px;
+      cursor: pointer;
+    }
+  </style>
+
+  <script>
+    function rewardUser() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get("userid");
+
+      if (!userId) {
+        alert("User ID not found");
+        return;
+      }
+
+      // Belohnung nach Ad (hier wird dein Telegram-Bot-Reward-Endpoint aufgerufen)
+      fetch(`https://thebot-am7g.onrender.com/reward?userid=${userId}`)
+        .then(() => {
+          alert("✅ You received your joker!");
+        })
+        .catch(() => {
+          alert("❌ Error rewarding user.");
+        });
+    }
+  </script>
+
+  <!-- MONETAG: Rewarded Interstitial -->
+  <script>
+    function showRewardedAd() {
+      show_9422332().then(() => {
+        rewardUser(); // <- Hier wird dein Bot aufgerufen
+      });
+    }
+  </script>
+
+  <script src="https://rewardedads.monetag.com/show_9422332.js"></script>
+</head>
+
+<body onload="showRewardedAd()">
+  <h2>🎥 Please wait while the ad loads...</h2>
+  <p>After watching the ad, your joker will be credited automatically.</p>
+</body>
+</html>
