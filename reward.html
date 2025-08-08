@@ -1,75 +1,190 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>WinQuizBot — Daily Bonus</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WinQuizBot — Get Joker</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width:600px; margin:40px auto; text-align:center; }
-    button { font-size:18px; padding:12px 18px; cursor:pointer; }
-    .info { margin-top:20px; color:#333; }
+    body { font-family: Arial, Helvetica, sans-serif; text-align:center; padding:36px; }
+    .card { max-width:640px; margin:24px auto; padding:20px; border-radius:8px; box-shadow:0 6px 24px rgba(0,0,0,0.08); }
+    button { padding:10px 18px; font-size:16px; margin:8px; cursor:pointer; border-radius:6px; border: none; }
+    #status { margin-top:14px; font-weight:600; }
+    a.button-like { display:inline-block; padding:10px 18px; border-radius:6px; text-decoration:none; background:#0078D4; color:#fff; }
   </style>
 </head>
 <body>
-  <h1>🎁 WinQuizBot — Täglicher Bonus</h1>
-  <p class="info">Klicke auf den Button, um dir heute 1 Joker zu holen.</p>
+  <div class="card">
+    <h2 id="title">🎥 Watch ad — get a joker</h2>
+    <p id="desc">Please watch a short ad. After completion your joker will be credited.</p>
 
-  <button id="claimBtn">🎯 Joker holen</button>
+    <div id="controls">
+      <button id="watchBtn">▶️ Watch ad</button>
+      <button id="claimBtn">✅ Claim reward</button>
+    </div>
 
-  <p id="status" class="info"></p>
+    <p id="help" style="font-size:14px; color:#444"></p>
+    <div id="status"></div>
+  </div>
 
   <script>
-    function getUserId() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get('userid') || params.get('userId') || params.get('user_id');
+    // --- Texte (DE / EN)
+    const TEXTS = {
+      en: {
+        title: "🎥 Watch an ad — claim a daily joker",
+        desc: "Watch the ad. After it ends, press \"Claim reward\" to receive your joker.",
+        watchBtn: "▶️ View Ad",
+        claimBtn: "✅ Claim Reward",
+        already: "❗ You've already claimed today's joker.",
+        success: "✅ Joker credited! Check your bot — then press ▶️ Continue to resume the quiz.",
+        error: "❌ Error while requesting reward. Try again later.",
+        waiting: "Please wait — loading the ad...",
+        noAd: "⚠️ Ad provider not available. Use the Claim button after you've watched any fallback ad."
+      },
+      de: {
+        title: "🎥 Werbung ansehen — täglichen Joker holen",
+        desc: "Sieh dir die Werbung an. Danach auf „Belohnung abholen“ klicken, um deinen Joker zu erhalten.",
+        watchBtn: "▶️ Werbung ansehen",
+        claimBtn: "✅ Belohnung abholen",
+        already: "❗ Du hast den heutigen Joker bereits eingelöst.",
+        success: "✅ Joker gutgeschrieben! Schau im Bot nach — dann kannst du das Quiz fortsetzen.",
+        error: "❌ Fehler beim Einlösen. Versuche es später noch einmal.",
+        waiting: "Bitte warten — Werbung wird geladen...",
+        noAd: "⚠️ Werbung nicht verfügbar. Nutze danach den Belohnungs-Button."
+      }
+    };
+
+    function params() {
+      return new URLSearchParams(window.location.search);
+    }
+    const urlParams = params();
+    const userId = urlParams.get("userid") || urlParams.get("tgid") || urlParams.get("user_id") || "";
+    const lang = (urlParams.get("lang") || "en").startsWith("de") ? "de" : "en";
+    const t = TEXTS[lang];
+
+    // Elements
+    const titleEl = document.getElementById("title");
+    const descEl  = document.getElementById("desc");
+    const watchBtn = document.getElementById("watchBtn");
+    const claimBtn = document.getElementById("claimBtn");
+    const statusEl = document.getElementById("status");
+    const helpEl   = document.getElementById("help");
+
+    // Init UI text
+    titleEl.textContent = t.title;
+    descEl.textContent = t.desc;
+    watchBtn.textContent = t.watchBtn;
+    claimBtn.textContent = t.claimBtn;
+    helpEl.textContent = "";
+
+    // LocalStorage key (per user)
+    function lastClaimKey(uid){ return `winquiz_last_claim_${uid}`; }
+    function claimedToday(uid) {
+      if(!uid) return false;
+      const key = lastClaimKey(uid);
+      const v = localStorage.getItem(key);
+      if(!v) return false;
+      return v === new Date().toISOString().slice(0,10);
+    }
+    function markClaimed(uid) {
+      if(!uid) return;
+      const key = lastClaimKey(uid);
+      localStorage.setItem(key, new Date().toISOString().slice(0,10));
     }
 
-    async function claimBonus() {
-      const uid = getUserId();
-      const statusEl = document.getElementById('status');
-      if (!uid) {
-        alert("User ID nicht gefunden. Bitte die Seite über den Bot-Link öffnen.");
+    function showStatus(msg){ statusEl.textContent = msg; }
+    function setHelp(msg){ helpEl.textContent = msg; }
+
+    // Reward call
+    async function rewardUser() {
+      if(!userId) {
+        alert("User id missing");
+        return;
+      }
+      if(claimedToday(userId)) {
+        showStatus(t.already);
         return;
       }
 
-      statusEl.textContent = "⏳ Bitte warten...";
-
       try {
-        const resp = await fetch(`https://thebot-am7g.onrender.com/bonus?userid=${encodeURIComponent(uid)}`, {
-          method: 'GET',
-          credentials: 'omit'
-        });
-
-        // Versuche JSON zu lesen (Route liefert JSON)
-        const data = await resp.json().catch(()=>null);
-
-        if (resp.ok && data) {
-          if (data.status === 'ok') {
-            statusEl.textContent = data.message || "Bonus gutgeschrieben!";
-            alert(data.message || "Bonus gutgeschrieben!");
-          } else if (data.status === 'already') {
-            statusEl.textContent = data.message || "Bereits heute eingelöst.";
-            alert(data.message || "Bereits heute eingelöst.");
-          } else {
-            statusEl.textContent = data.message || "Unbekannte Antwort vom Server.";
-            alert(data.message || "Fehler");
-          }
+        showStatus(t.waiting);
+        // call your bot reward endpoint
+        const url = `https://thebot-am7g.onrender.com/reward?userid=${encodeURIComponent(userId)}`;
+        const res = await fetch(url, { method: "GET" });
+        if(res.ok) {
+          markClaimed(userId);
+          showStatus(t.success);
         } else {
-          // Wenn kein JSON, zeige einfachen Text
-          const txt = await resp.text().catch(()=>null);
-          statusEl.textContent = txt || "Fehler beim Serveraufruf";
-          alert(txt || "Fehler beim Serveraufruf");
+          const txt = await res.text().catch(()=>"");
+          console.warn("Reward response not OK:", res.status, txt);
+          showStatus(t.error);
         }
-      } catch (e) {
-        statusEl.textContent = "Netzwerkfehler: " + e;
-        alert("Netzwerkfehler: " + e);
+      } catch(err) {
+        console.error(err);
+        showStatus(t.error);
       }
     }
 
-    document.getElementById('claimBtn').addEventListener('click', claimBonus);
+    // Try to show Monetag ad (if available)
+    async function showRewardedAd() {
+      setHelp("");
+      if(!userId) {
+        setHelp("Missing userid in URL.");
+        return;
+      }
 
-    // Optional: Wenn du willst, könntest du beim Laden automatisch claimen:
-    // window.addEventListener('DOMContentLoaded', claimBonus);
+      // If already claimed today -> inform user and still allow manual claim (for testing)
+      if(claimedToday(userId)) {
+        showStatus(t.already);
+      }
+
+      // Monetag API function name (used previously)
+      if(typeof show_9422332 === "function") {
+        setHelp(t.waiting);
+        try {
+          await show_9422332();
+          // after ad completed, optionally auto-claim:
+          await rewardUser();
+        } catch(e) {
+          console.warn("Ad failed:", e);
+          setHelp(t.noAd);
+        }
+      } else {
+        // Monetag not present on this page (fallback)
+        setHelp(t.noAd);
+      }
+    }
+
+    // Buttons
+    watchBtn.addEventListener("click", async ()=>{
+      setHelp(t.waiting);
+      // If ad function exists call it; otherwise tell user
+      if(typeof show_9422332 === "function") {
+        try {
+          await show_9422332();
+          setHelp("");
+          // let user click Claim (or auto claim)
+          // we do NOT auto-run reward here to give the user control
+        } catch(e) {
+          console.warn("Ad show failed", e);
+          setHelp(t.noAd);
+        }
+      } else {
+        setHelp(t.noAd);
+      }
+    });
+
+    claimBtn.addEventListener("click", async ()=>{
+      await rewardUser();
+    });
+
+    // Auto-run on load: try to show ad (keeps UX simple)
+    window.addEventListener("load", ()=>{
+      // small delay to let ad script load
+      setTimeout(showRewardedAd, 700);
+    });
   </script>
+
+  <!-- Monetag script (if you use Monetag widget) -->
+  <script src="https://rewardedads.monetag.com/show_9422332.js" async></script>
 </body>
 </html>
