@@ -1,59 +1,75 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Watch Ad to Get Reward</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta charset="utf-8" />
+  <title>WinQuizBot — Daily Bonus</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 40px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 18px;
-      margin-top: 30px;
-      cursor: pointer;
-    }
+    body { font-family: Arial, sans-serif; max-width:600px; margin:40px auto; text-align:center; }
+    button { font-size:18px; padding:12px 18px; cursor:pointer; }
+    .info { margin-top:20px; color:#333; }
   </style>
+</head>
+<body>
+  <h1>🎁 WinQuizBot — Täglicher Bonus</h1>
+  <p class="info">Klicke auf den Button, um dir heute 1 Joker zu holen.</p>
+
+  <button id="claimBtn">🎯 Joker holen</button>
+
+  <p id="status" class="info"></p>
 
   <script>
-    function rewardUser() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const userId = urlParams.get("userid");
+    function getUserId() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('userid') || params.get('userId') || params.get('user_id');
+    }
 
-      if (!userId) {
-        alert("User ID not found");
+    async function claimBonus() {
+      const uid = getUserId();
+      const statusEl = document.getElementById('status');
+      if (!uid) {
+        alert("User ID nicht gefunden. Bitte die Seite über den Bot-Link öffnen.");
         return;
       }
 
-      // Belohnung nach Ad (hier wird dein Telegram-Bot-Reward-Endpoint aufgerufen)
-      fetch(`https://thebot-am7g.onrender.com/reward?userid=${userId}`)
-        .then(() => {
-          alert("✅ You received your joker!");
-        })
-        .catch(() => {
-          alert("✅ You received your joker! ❌ you can close the window");
+      statusEl.textContent = "⏳ Bitte warten...";
+
+      try {
+        const resp = await fetch(`https://thebot-am7g.onrender.com/bonus?userid=${encodeURIComponent(uid)}`, {
+          method: 'GET',
+          credentials: 'omit'
         });
+
+        // Versuche JSON zu lesen (Route liefert JSON)
+        const data = await resp.json().catch(()=>null);
+
+        if (resp.ok && data) {
+          if (data.status === 'ok') {
+            statusEl.textContent = data.message || "Bonus gutgeschrieben!";
+            alert(data.message || "Bonus gutgeschrieben!");
+          } else if (data.status === 'already') {
+            statusEl.textContent = data.message || "Bereits heute eingelöst.";
+            alert(data.message || "Bereits heute eingelöst.");
+          } else {
+            statusEl.textContent = data.message || "Unbekannte Antwort vom Server.";
+            alert(data.message || "Fehler");
+          }
+        } else {
+          // Wenn kein JSON, zeige einfachen Text
+          const txt = await resp.text().catch(()=>null);
+          statusEl.textContent = txt || "Fehler beim Serveraufruf";
+          alert(txt || "Fehler beim Serveraufruf");
+        }
+      } catch (e) {
+        statusEl.textContent = "Netzwerkfehler: " + e;
+        alert("Netzwerkfehler: " + e);
+      }
     }
+
+    document.getElementById('claimBtn').addEventListener('click', claimBonus);
+
+    // Optional: Wenn du willst, könntest du beim Laden automatisch claimen:
+    // window.addEventListener('DOMContentLoaded', claimBonus);
   </script>
-
-  <!-- MONETAG: Rewarded Interstitial -->
-  <script>
-    function showRewardedAd() {
-      show_9422332().then(() => {
-        rewardUser(); // <- Hier wird dein Bot aufgerufen
-      });
-    }
-  </script>
-
-  <script src="//libtl.com/sdk.js" data-zone="9422332" data-sdk="show_9422332"></script>
-</head>
-
-<body onload="showRewardedAd()">
-  <h2>🎥 Please wait while the ad loads...</h2>
-  <p>After watching the ad, your joker will be credited automatically.</p>
 </body>
 </html>
