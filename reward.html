@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>WinQuizBot — Get Joker</title>
+<title>WinQuizBot — Get Joker & CPX Offers</title>
 <style>
   body {
     font-family: Arial, Helvetica, sans-serif;
@@ -37,17 +37,11 @@
     border: none;
     font-weight: 600;
     transition: 0.2s;
+    background: #28a745;
+    color: white;
   }
   button:hover {
     opacity: 0.9;
-  }
-  #watchBtn {
-    background: #0078d4;
-    color: #fff;
-  }
-  #claimBtn {
-    background: #28a745;
-    color: #fff;
   }
   #status {
     margin-top: 14px;
@@ -61,45 +55,45 @@
     color: #666;
     margin-top: 6px;
   }
+  #cpx-container {
+    margin-top: 30px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  iframe {
+    width: 100%;
+    height: 2000px;
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+  }
 </style>
 </head>
 <body>
 <div class="card">
-  <h2 id="title">🎥 Watch ad — get a joker</h2>
-  <p id="desc">Please watch a short ad. After completion your joker will be credited.</p>
+  <h2 id="title">🎁 Täglichen Joker abholen</h2>
+  <p id="desc">Klicke auf den Button, um deinen täglichen Joker zu erhalten.</p>
 
-  <div id="controls">
-    <button id="watchBtn">▶️ Watch ad</button>
-    <button id="claimBtn">✅ Claim reward</button>
-  </div>
+  <button id="claimBtn">✅ Joker holen</button>
 
+  <p id="status" class="info"></p>
   <p id="help"></p>
-  <div id="status" class="info"></div>
+</div>
+
+<div id="cpx-container" class="card">
+  <h2>📝 Weitere Gewinnlose durch CPX Research</h2>
+  <iframe id="cpx-iframe" src=""></iframe>
 </div>
 
 <script>
 const TEXTS = {
-  en: {
-    title: "🎥 Watch an ad — claim a daily joker",
-    desc: "Watch the ad. After it ends, press \"Claim reward\" to receive your joker.",
-    watchBtn: "▶️ View Ad",
-    claimBtn: "✅ Claim Reward",
-    already: "❗ You've already claimed today's joker.",
-    success: "✅ Joker credited! Check your bot — then press ▶️ Continue to resume the quiz.",
-    error: "❌ Error while requesting reward. Try again later.",
-    waiting: "Please wait — loading the ad...",
-    noAd: "⚠️ Ad provider not available. Use the Claim button after watching any fallback ad."
-  },
   de: {
-    title: "🎥 Werbung ansehen — täglichen Joker holen",
-    desc: "Sieh dir die Werbung an. Danach auf „Belohnung abholen“ klicken, um deinen Joker zu erhalten.",
-    watchBtn: "▶️ Werbung ansehen",
-    claimBtn: "✅ Belohnung abholen",
     already: "❗ Du hast den heutigen Joker bereits eingelöst.",
-    success: "✅ Joker gutgeschrieben! Schau im Bot nach — dann kannst du das Quiz fortsetzen.",
-    error: "❌ Fehler beim Einlösen. Versuche es später noch einmal.",
-    waiting: "Bitte warten — Werbung wird geladen...",
-    noAd: "⚠️ Werbung nicht verfügbar. Nutze danach den Belohnungs-Button."
+    success: "✅ Joker gutgeschrieben! Schau im Bot nach.",
+    error: "❌ Fehler beim Einlösen. Versuche es später erneut.",
+    waiting: "Bitte warten...",
+    missingUser: "❗ Fehlende Userdaten in der URL."
   }
 };
 
@@ -107,26 +101,20 @@ function params() {
   return new URLSearchParams(window.location.search);
 }
 const urlParams = params();
+
 const userId = urlParams.get("userid") || urlParams.get("tgid") || urlParams.get("user_id") || "";
-const lang = (urlParams.get("lang") || "en").startsWith("de") ? "de" : "en";
+const username = urlParams.get("username") || urlParams.get("user_name") || "";
+const useremail = urlParams.get("email") || "";
+const lang = (urlParams.get("lang") || "de").startsWith("de") ? "de" : "en";
 const t = TEXTS[lang];
 
-// Elements
-const titleEl = document.getElementById("title");
-const descEl  = document.getElementById("desc");
-const watchBtn = document.getElementById("watchBtn");
+// UI-Elemente
 const claimBtn = document.getElementById("claimBtn");
 const statusEl = document.getElementById("status");
-const helpEl   = document.getElementById("help");
+const helpEl = document.getElementById("help");
+const cpxIframe = document.getElementById("cpx-iframe");
 
-// Init UI text
-titleEl.textContent = t.title;
-descEl.textContent = t.desc;
-watchBtn.textContent = t.watchBtn;
-claimBtn.textContent = t.claimBtn;
-helpEl.textContent = "";
-
-// LocalStorage key (per user)
+// LocalStorage-Funktion, um tägliches Claimen zu prüfen
 function lastClaimKey(uid){ return `winquiz_last_claim_${uid}`; }
 function claimedToday(uid) {
   if(!uid) return false;
@@ -141,15 +129,17 @@ function markClaimed(uid) {
   localStorage.setItem(key, new Date().toISOString().slice(0,10));
 }
 
+// Statusanzeige
 function showStatus(msg, type="info"){
   statusEl.textContent = msg;
   statusEl.className = type;
 }
 function setHelp(msg){ helpEl.textContent = msg; }
 
+// Reward anfordern vom Backend
 async function rewardUser() {
   if(!userId) {
-    alert("User id missing");
+    showStatus(t.missingUser, "error");
     return;
   }
   if(claimedToday(userId)) {
@@ -172,54 +162,6 @@ async function rewardUser() {
   }
 }
 
-async function showRewardedAd() {
-  setHelp("");
-  if(!userId) {
-    setHelp("Missing userid in URL.");
-    return;
-  }
-  if(claimedToday(userId)) {
-    showStatus(t.already, "info");
-  }
-  if(typeof show_9422332 === "function") {
-    setHelp(t.waiting);
-    try {
-      await show_9422332();
-      await rewardUser();
-    } catch(e) {
-      console.warn("Ad failed:", e);
-      setHelp(t.noAd);
-    }
-  } else {
-    setHelp(t.noAd);
-  }
-}
+claimBtn.addEventListener("click", rewardUser);
 
-watchBtn.addEventListener("click", async ()=>{
-  setHelp(t.waiting);
-  if(typeof show_9422332 === "function") {
-    try {
-      await show_9422332();
-      setHelp("");
-    } catch(e) {
-      console.warn("Ad show failed", e);
-      setHelp(t.noAd);
-    }
-  } else {
-    setHelp(t.noAd);
-  }
-});
-
-claimBtn.addEventListener("click", async ()=>{
-  await rewardUser();
-});
-
-window.addEventListener("load", ()=>{
-  setTimeout(showRewardedAd, 700);
-});
-</script>
-
-<!-- Monetag script -->
-<script src="https://rewardedads.monetag.com/show_9422332.js" async></script>
-</body>
-</html>
+// CPX iframe URL
