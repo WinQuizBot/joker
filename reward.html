@@ -41,12 +41,35 @@
         margin-top: 20px;
         font-size: 1rem;
     }
+    /* Banner Styling — füge das in deinen bestehenden <style>-Block ein */
+    .banner-container {
+      margin-top: 14px;        /* Abstand unter dem Button */
+      text-align: center;
+    }
+    .banner-container a {
+      display: inline-block;
+    }
+    .banner-container img {
+      max-width: 100%;         /* responsive, passt sich an */
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+      cursor: pointer;
+      display: block;
+    }
 </style>
 </head>
 <body>
 <div class="container">
     <h1 id="title">🎁 Deinen täglichen Joker abholen</h1>
     <button id="claimBtn">🎥 Joker holen</button>
+    <!-- === BANNER EINBAUEN === -->
+    <div class="banner-container">
+      <a id="bannerLink" href="https://bcgame39.com/i-hi7kj4gq-n/" target="_blank" rel="noopener noreferrer">
+        <img src="banner_01.gif" alt="Anzeige - Jetzt klicken" />
+      </a>
+    </div>
+    <!-- === ENDE BANNER === -->
     <div class="msg" id="message"></div>
 </div>
 
