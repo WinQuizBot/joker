@@ -1,39 +1,197 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🎁 Joker holen</title>
-<style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; text-align: center; }
-    .container { max-width: 400px; margin: 40px auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h1 { font-size: 1.4rem; margin-bottom: 20px; }
-    button { background: #ff9800; border: none; color: #fff; padding: 12px 20px; font-size: 1rem; border-radius: 8px; cursor: pointer; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    .msg { margin-top: 20px; font-size: 1rem; }
-    .banner-container { margin-top: 14px; text-align: center; }
-    .banner-container img { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 6px 16px rgba(0,0,0,0.08); cursor: pointer; display: block; }
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>🎁 Joker holen</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container { 
+            max-width: 450px; 
+            margin: 0 auto; 
+            background: #fff; 
+            padding: 30px 25px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        h1 { 
+            font-size: 1.6rem; 
+            margin-bottom: 25px; 
+            color: #333;
+            text-align: center;
+        }
+        
+        h2 {
+            font-size: 1.3rem;
+            margin: 30px 0 15px 0;
+            color: #444;
+            text-align: center;
+        }
+        
+        p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        button { 
+            background: linear-gradient(45deg, #ff9800, #ff5722); 
+            border: none; 
+            color: #fff; 
+            padding: 15px 25px; 
+            font-size: 1.1rem; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+        
+        button:disabled { 
+            background: #ccc; 
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .msg { 
+            margin-top: 20px; 
+            font-size: 1rem; 
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .msg.success {
+            background: #e8f5e8;
+            color: #2e7d2e;
+            border: 1px solid #4caf50;
+        }
+        
+        .msg.error {
+            background: #ffeaea;
+            color: #d32f2f;
+            border: 1px solid #f44336;
+        }
+        
+        .msg.loading {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #2196f3;
+        }
+        
+        .banner-container { 
+            margin: 25px 0; 
+            text-align: center; 
+        }
+        
+        .banner-container img { 
+            max-width: 100%; 
+            height: auto; 
+            border-radius: 12px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12); 
+            cursor: pointer; 
+            transition: transform 0.3s ease;
+        }
+        
+        .banner-container img:hover {
+            transform: scale(1.02);
+        }
+        
+        #cpx-wrapper {
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        #cpx-frame {
+            border: none;
+            width: 100%;
+            min-height: 600px;
+            background: #f8f9fa;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #ddd, transparent);
+            margin: 30px 0;
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+                padding: 20px 15px;
+            }
+            
+            h1 { font-size: 1.4rem; }
+            h2 { font-size: 1.2rem; }
+            button { font-size: 1rem; padding: 12px 20px; }
+        }
+    </style>
 </head>
 <body>
-
 <div class="container">
     <h1 id="title">🎁 Deinen täglichen Joker abholen</h1>
     <button id="claimBtn">🎥 Joker holen</button>
-
-    <div class="banner-container">
-      <a href="https://bcgame39.com/i-hi7kj4gq-n/" target="_blank" rel="noopener noreferrer">
-        <img src="banner_01.gif" alt="Anzeige - Jetzt klicken" />
-      </a>
-    </div>
-
-    <h2>Verdiene zusätzliche Gewinnlose</h2>
-    <p>Mach Umfragen und sichere dir Gewinnlose für den WinQuiz Bot.</p>
-    <div id="cpx-wrapper">
-      <iframe id="cpx-frame" width="100%" height="2000" frameborder="0"></iframe>
-    </div>
-
     <div class="msg" id="message"></div>
+    
+    <div class="banner-container">
+        <a href="https://bcgame39.com/i-hi7kj4gq-n/" target="_blank" rel="noopener noreferrer">
+            <img src="banner_01.gif" alt="Anzeige - Jetzt klicken" onerror="this.style.display='none'" />
+        </a>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <h2 id="survey-title">Verdiene zusätzliche Gewinnlose</h2>
+    <p id="survey-desc">Mach Umfragen und sichere dir Gewinnlose für den WinQuiz Bot.</p>
+    
+    <div id="cpx-wrapper">
+        <iframe id="cpx-frame" frameborder="0"></iframe>
+    </div>
 </div>
 
 <script>
@@ -44,51 +202,194 @@
     const secureHash = params.get("secure_hash") || params.get("hash") || "";
     const username = params.get("username") || params.get("user_name") || "";
     const useremail = params.get("email") || params.get("user_email") || "";
-
+    
+    // DOM Elemente
     const claimBtn = document.getElementById("claimBtn");
     const messageEl = document.getElementById("message");
     const titleEl = document.getElementById("title");
     const cpxFrame = document.getElementById("cpx-frame");
-
+    const surveyTitle = document.getElementById("survey-title");
+    const surveyDesc = document.getElementById("survey-desc");
+    
     // ==== Sprache setzen ====
     if (lang === "en") {
         titleEl.textContent = "🎁 Claim your daily joker";
         claimBtn.textContent = "🎥 Get joker";
+        surveyTitle.textContent = "Earn additional tickets";
+        surveyDesc.textContent = "Complete surveys and earn tickets for the WinQuiz Bot.";
     }
-
-    // ==== Joker-Button ====
-    claimBtn.addEventListener("click", () => {
+    
+    // ==== Utility Funktionen ====
+    function showMessage(text, type = 'info') {
+        messageEl.textContent = text;
+        messageEl.className = `msg ${type}`;
+        messageEl.style.display = 'block';
+        
+        // Auto-hide nach 5 Sekunden bei success/error
+        if (type === 'success' || type === 'error') {
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+    }
+    
+    function setButtonLoading(loading) {
+        if (loading) {
+            claimBtn.innerHTML = '<span class="loading-spinner"></span>' + 
+                (lang === "de" ? "Wird geladen..." : "Loading...");
+            claimBtn.disabled = true;
+        } else {
+            claimBtn.innerHTML = lang === "de" ? "🎥 Joker holen" : "🎥 Get joker";
+            claimBtn.disabled = false;
+        }
+    }
+    
+    // ==== Joker-Button Event Handler ====
+    claimBtn.addEventListener("click", async () => {
         if (!userid) {
-            messageEl.textContent = lang === "de" ? "❌ Fehler: Keine User-ID gefunden." : "❌ Error: No user ID found.";
+            showMessage(
+                lang === "de" ? "❌ Fehler: Keine User-ID gefunden." : "❌ Error: No user ID found.",
+                'error'
+            );
             return;
         }
-
-        claimBtn.disabled = true;
-        messageEl.textContent = lang === "de" ? "⏳ Wird geladen..." : "⏳ Loading...";
-
-        fetch(`https://thebot-am7g.onrender.com/reward?userid=${userid}`)
-            .then(res => res.text())
-            .then(text => {
-                if (text.trim().toLowerCase() === "ok") {
-                    messageEl.textContent = lang === "de"
-                        ? "✅ Joker erfolgreich erhalten! Schau in den Bot-Chat."
-                        : "✅ Joker claimed successfully! Check the bot chat.";
-                } else {
-                    messageEl.textContent = lang === "de"
-                        ? "⚠️ Fehler: " + text
-                        : "⚠️ Error: " + text;
-                    claimBtn.disabled = false;
+        
+        setButtonLoading(true);
+        showMessage(
+            lang === "de" ? "⏳ Wird geladen..." : "⏳ Loading...",
+            'loading'
+        );
+        
+        try {
+            const response = await fetch(`https://thebot-am7g.onrender.com/bonus?userid=${userid}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
                 }
-            })
-            .catch(err => {
-                console.error(err);
-                messageEl.textContent = lang === "de"
-                    ? "❌ Verbindungsfehler."
-                    : "❌ Connection error.";
-                claimBtn.disabled = false;
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const contentType = response.headers.get('content-type');
+            let data;
+            
+            if (contentType && contentType.includes('application/json')) {
+                data = await response.json();
+                
+                if (data.status === 'ok') {
+                    showMessage(
+                        lang === "de" 
+                            ? `✅ Joker erfolgreich erhalten! (Gesamt: ${data.joker || '?'}) Schau in den Bot-Chat.`
+                            : `✅ Joker claimed successfully! (Total: ${data.joker || '?'}) Check the bot chat.`,
+                        'success'
+                    );
+                } else if (data.status === 'already') {
+                    showMessage(
+                        lang === "de"
+                            ? "ℹ️ Du hast heute bereits einen Joker erhalten."
+                            : "ℹ️ You already claimed today's joker.",
+                        'error'
+                    );
+                    setButtonLoading(false);
+                } else {
+                    throw new Error(data.message || 'Unknown error');
+                }
+            } else {
+                const text = await response.text();
+                if (text.trim().toLowerCase() === "ok") {
+                    showMessage(
+                        lang === "de"
+                            ? "✅ Joker erfolgreich erhalten! Schau in den Bot-Chat."
+                            : "✅ Joker claimed successfully! Check the bot chat.",
+                        'success'
+                    );
+                } else {
+                    throw new Error(text);
+                }
+            }
+            
+        } catch (error) {
+            console.error('Claim error:', error);
+            showMessage(
+                lang === "de"
+                    ? `❌ Fehler: ${error.message}`
+                    : `❌ Error: ${error.message}`,
+                'error'
+            );
+            setButtonLoading(false);
+        }
     });
-
+    
     // ==== CPX Survey Wall laden ====
-    if (!userid) {
-        document.getElementById('cpx-wrapper').innerHTML = "<p style='color:#c00;'>Be
+    function loadCPXSurveys() {
+        if (!userid) {
+            document.getElementById('cpx-wrapper').innerHTML = 
+                `<p style='color:#c00; text-align: center; padding: 20px;'>
+                    ${lang === "de" ? "Fehler: Keine User-ID für Umfragen verfügbar." : "Error: No user ID available for surveys."}
+                </p>`;
+            return;
+        }
+        
+        // CPX Research Integration
+        // Ersetzen Sie 'YOUR_APP_ID' durch Ihre echte CPX App ID
+        const cpxAppId = '37746'; // Ihre CPX App ID hier eintragen
+        const cpxUserId = userid;
+        const cpxSubId1 = 'telegram_bot'; // Optional: für Tracking
+        
+        // Postback URL für Ihr System
+        const postbackUrl = encodeURIComponent(`https://thebot-am7g.onrender.com/cpx-postback`);
+        
+        // CPX Survey Wall URL
+        const cpxUrl = `https://offers.cpx-research.com/index.php?app_id=${cpxAppId}&ext_user_id=${cpxUserId}&subid_1=${cpxSubId1}&postback_url=${postbackUrl}`;
+        
+        console.log('Loading CPX with URL:', cpxUrl);
+        
+        // Iframe laden
+        cpxFrame.src = cpxUrl;
+        
+        // Fallback falls Iframe nicht lädt
+        setTimeout(() => {
+            if (!cpxFrame.contentDocument && !cpxFrame.contentWindow) {
+                document.getElementById('cpx-wrapper').innerHTML = 
+                    `<p style='text-align: center; padding: 20px;'>
+                        <a href="${cpxUrl}" target="_blank" style="color: #ff9800; text-decoration: none; font-weight: bold;">
+                            ${lang === "de" ? "🔗 Umfragen in neuem Tab öffnen" : "🔗 Open surveys in new tab"}
+                        </a>
+                    </p>`;
+            }
+        }, 5000);
+    }
+    
+    // ==== Initialisierung ====
+    document.addEventListener('DOMContentLoaded', () => {
+        // CPX Surveys laden
+        loadCPXSurveys();
+        
+        // User-ID in Console für Debug
+        console.log('User ID:', userid);
+        console.log('Language:', lang);
+    });
+    
+    // ==== Error Handling für Iframe ====
+    cpxFrame.addEventListener('error', () => {
+        console.error('CPX Frame failed to load');
+        document.getElementById('cpx-wrapper').innerHTML = 
+            `<p style='color:#c00; text-align: center; padding: 20px;'>
+                ${lang === "de" ? "Umfragen konnten nicht geladen werden." : "Surveys could not be loaded."}
+            </p>`;
+    });
+    
+    // ==== Service Worker für PWA (optional) ====
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => console.log('SW registered'))
+                .catch(error => console.log('SW registration failed'));
+        });
+    }
+</script>
+</body>
+</html>
